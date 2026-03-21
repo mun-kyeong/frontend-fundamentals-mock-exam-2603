@@ -7,14 +7,15 @@ import { useCreateReservation } from 'pages/RoomBookingPage/hooks/useCreateReser
 import { useReservations } from 'pages/RoomBookingPage/hooks/useReservations';
 import { useRooms } from 'pages/RoomBookingPage/hooks/useRooms';
 import { useEffect, useState } from 'react';
+import { Controller, useForm, useWatch } from 'react-hook-form';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { DatePicker } from '../../shared/components/DatePicker';
 import { SectionBlock } from '../../shared/components/SectionBlock';
+import { formatDate } from '../../shared/utils/date.utils';
 import { FieldBlock } from 'pages/RoomBookingPage/components/FieldBlock';
 import { InlineErrorMessage } from 'pages/RoomBookingPage/components/InlineErrorMessage';
 import { NumberInput } from 'pages/RoomBookingPage/components/NumberInput';
 import { ToggleChipButton } from 'pages/RoomBookingPage/components/ToggleChipButton';
-import { formatDate } from '../../shared/utils/date.utils';
 
 const EQUIPMENT_LABELS: Record<string, string> = {
   tv: 'TV',
@@ -33,20 +34,37 @@ for (let h = 9; h <= 20; h++) {
   }
 }
 
+type FormValues = {
+  date: string;
+  startTime: string;
+  endTime: string;
+  attendees: number;
+  equipment: string[];
+  preferredFloor: string;
+};
+
 export function RoomBookingPage() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
 
-  const [date, setDate] = useState(searchParams.get('date') || formatDate(new Date()));
-  const [startTime, setStartTime] = useState(searchParams.get('startTime') || '');
-  const [endTime, setEndTime] = useState(searchParams.get('endTime') || '');
-  const [attendees, setAttendees] = useState(Number(searchParams.get('attendees')) || 1);
-  const [equipment, setEquipment] = useState<string[]>(
-    searchParams.get('equipment') ? searchParams.get('equipment')!.split(',').filter(Boolean) : []
-  );
-  const [preferredFloor, setPreferredFloor] = useState<number | null>(
-    searchParams.get('floor') ? Number(searchParams.get('floor')) : null
-  );
+  const defaultValues: FormValues = {
+    date: searchParams.get('date') || formatDate(new Date()),
+    startTime: searchParams.get('startTime') || '',
+    endTime: searchParams.get('endTime') || '',
+    attendees: Number(searchParams.get('attendees')) || 1,
+    equipment: searchParams.get('equipment') ? searchParams.get('equipment')!.split(',').filter(Boolean) : [],
+    preferredFloor: searchParams.get('floor') || '',
+  };
+  const { control, setValue } = useForm<FormValues>({ defaultValues });
+  const watchedValues = useWatch<FormValues>({
+    control,
+    defaultValue: defaultValues,
+  });
+  const formValues: FormValues = {
+    ...defaultValues,
+    ...(watchedValues ?? {}),
+  };
+  const { date, startTime, endTime, attendees, equipment, preferredFloor } = formValues;
   const [selectedRoomId, setSelectedRoomId] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
@@ -58,7 +76,7 @@ export function RoomBookingPage() {
     if (endTime) params.endTime = endTime;
     if (attendees > 1) params.attendees = String(attendees);
     if (equipment.length > 0) params.equipment = equipment.join(',');
-    if (preferredFloor !== null) params.floor = String(preferredFloor);
+    if (preferredFloor) params.floor = preferredFloor;
     setSearchParams(params, { replace: true });
   }, [date, startTime, endTime, attendees, equipment, preferredFloor, setSearchParams]);
 
@@ -86,13 +104,14 @@ export function RoomBookingPage() {
 
   // 필터링
   const floors = [...new Set(rooms.map((r: { floor: number }) => r.floor))].sort((a: number, b: number) => a - b);
+  const preferredFloorNumber = preferredFloor ? Number(preferredFloor) : null;
 
   const availableRooms = isFilterComplete
     ? rooms
         .filter((room: { id: string; capacity: number; equipment: string[]; floor: number }) => {
           if (room.capacity < attendees) return false;
           if (!equipment.every(eq => room.equipment.includes(eq))) return false;
-          if (preferredFloor !== null && room.floor !== preferredFloor) return false;
+          if (preferredFloorNumber !== null && room.floor !== preferredFloorNumber) return false;
           const hasConflict = reservations.some(
             (r: { roomId: string; date: string; start: string; end: string }) =>
               r.roomId === room.id && r.date === date && r.start < endTime && r.end > startTime
@@ -165,14 +184,20 @@ export function RoomBookingPage() {
 
           {/* 날짜 */}
           <FieldBlock label="날짜">
-            <DatePicker
-              value={date}
-              min={formatDate(new Date())}
-              onChange={value => {
-                setDate(value);
-                handleFilterChange();
-              }}
-              ariaLabel="날짜"
+            <Controller
+              control={control}
+              name="date"
+              render={({ field }) => (
+                <DatePicker
+                  value={field.value}
+                  min={formatDate(new Date())}
+                  onChange={value => {
+                    field.onChange(value);
+                    handleFilterChange();
+                  }}
+                  ariaLabel="날짜"
+                />
+              )}
             />
           </FieldBlock>
           <Spacing size={14} />
@@ -180,38 +205,50 @@ export function RoomBookingPage() {
           {/* 시간 */}
           <div css={twoColumnRowCss}>
             <FieldBlock label="시작 시간" flex>
-              <Select
-                value={startTime}
-                onChange={e => {
-                  setStartTime(e.target.value);
-                  handleFilterChange();
-                }}
-                aria-label="시작 시간"
-              >
-                <option value="">선택</option>
-                {TIME_SLOTS.slice(0, -1).map(t => (
-                  <option key={t} value={t}>
-                    {t}
-                  </option>
-                ))}
-              </Select>
+              <Controller
+                control={control}
+                name="startTime"
+                render={({ field }) => (
+                  <Select
+                    value={field.value}
+                    onChange={e => {
+                      field.onChange(e.target.value);
+                      handleFilterChange();
+                    }}
+                    aria-label="시작 시간"
+                  >
+                    <option value="">선택</option>
+                    {TIME_SLOTS.slice(0, -1).map(t => (
+                      <option key={t} value={t}>
+                        {t}
+                      </option>
+                    ))}
+                  </Select>
+                )}
+              />
             </FieldBlock>
             <FieldBlock label="종료 시간" flex>
-              <Select
-                value={endTime}
-                onChange={e => {
-                  setEndTime(e.target.value);
-                  handleFilterChange();
-                }}
-                aria-label="종료 시간"
-              >
-                <option value="">선택</option>
-                {TIME_SLOTS.slice(1).map(t => (
-                  <option key={t} value={t}>
-                    {t}
-                  </option>
-                ))}
-              </Select>
+              <Controller
+                control={control}
+                name="endTime"
+                render={({ field }) => (
+                  <Select
+                    value={field.value}
+                    onChange={e => {
+                      field.onChange(e.target.value);
+                      handleFilterChange();
+                    }}
+                    aria-label="종료 시간"
+                  >
+                    <option value="">선택</option>
+                    {TIME_SLOTS.slice(1).map(t => (
+                      <option key={t} value={t}>
+                        {t}
+                      </option>
+                    ))}
+                  </Select>
+                )}
+              />
             </FieldBlock>
           </div>
           <Spacing size={14} />
@@ -219,33 +256,45 @@ export function RoomBookingPage() {
           {/* 참석 인원 + 선호 층 */}
           <div css={twoColumnRowCss}>
             <FieldBlock label="참석 인원" flex>
-              <NumberInput
-                value={attendees}
-                min={1}
-                onChange={value => {
-                  setAttendees(Math.max(1, value));
-                  handleFilterChange();
-                }}
-                ariaLabel="참석 인원"
+              <Controller
+                control={control}
+                name="attendees"
+                render={({ field }) => (
+                  <NumberInput
+                    value={field.value}
+                    min={1}
+                    onChange={value => {
+                      const nextValue = Math.max(1, value);
+                      field.onChange(nextValue);
+                      handleFilterChange();
+                    }}
+                    ariaLabel="참석 인원"
+                  />
+                )}
               />
             </FieldBlock>
             <FieldBlock label="선호 층" flex>
-              <Select
-                value={preferredFloor ?? ''}
-                onChange={e => {
-                  const val = e.target.value;
-                  setPreferredFloor(val === '' ? null : Number(val));
-                  handleFilterChange();
-                }}
-                aria-label="선호 층"
-              >
-                <option value="">전체</option>
-                {floors.map((f: number) => (
-                  <option key={f} value={f}>
-                    {f}층
-                  </option>
-                ))}
-              </Select>
+              <Controller
+                control={control}
+                name="preferredFloor"
+                render={({ field }) => (
+                  <Select
+                    value={field.value}
+                    onChange={e => {
+                      field.onChange(e.target.value);
+                      handleFilterChange();
+                    }}
+                    aria-label="선호 층"
+                  >
+                    <option value="">전체</option>
+                    {floors.map((f: number) => (
+                      <option key={f} value={String(f)}>
+                        {f}층
+                      </option>
+                    ))}
+                  </Select>
+                )}
+              />
             </FieldBlock>
           </div>
           <Spacing size={14} />
@@ -263,7 +312,7 @@ export function RoomBookingPage() {
                     ariaLabel={EQUIPMENT_LABELS[eq]}
                     onClick={() => {
                       const next = selected ? equipment.filter(e => e !== eq) : [...equipment, eq];
-                      setEquipment(next);
+                      setValue('equipment', next, { shouldDirty: true, shouldTouch: true });
                       handleFilterChange();
                     }}
                   >
