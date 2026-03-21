@@ -1,17 +1,17 @@
 import { css } from '@emotion/react';
-import { useEffect, useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { Top, Spacing, Border, Button } from '_tosslib/components';
+import { Border, Button, Spacing, Top } from '_tosslib/components';
 import { colors } from '_tosslib/constants/colors';
-import { DatePicker } from 'shared/components/DatePicker';
-import { MessageBanner } from 'shared/components/MessageBanner';
-import { ReservationTimeline } from 'pages/ReservationStatusPage/components/ReservationTimeline';
 import { MyReservationsList } from 'pages/ReservationStatusPage/components/MyReservationsList';
+import { ReservationTimeline } from 'pages/ReservationStatusPage/components/ReservationTimeline';
 import { SectionBlock } from 'pages/ReservationStatusPage/components/SectionBlock';
 import { useCancelReservation } from 'pages/ReservationStatusPage/hooks/useCancelReservation';
-import { useRooms } from 'pages/ReservationStatusPage/hooks/useRooms';
-import { useReservations } from 'pages/ReservationStatusPage/hooks/useReservations';
 import { useMyReservations } from 'pages/ReservationStatusPage/hooks/useMyReservations';
+import { useReservations } from 'pages/ReservationStatusPage/hooks/useReservations';
+import { useRooms } from 'pages/ReservationStatusPage/hooks/useRooms';
+import { useEffect, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { MessageBanner } from '../../shared/components/MessageBanner';
+import { DatePicker } from '../../shared/components/DatePicker';
 import { formatDate } from '../../shared/utils/date.utils';
 
 const EQUIPMENT_LABELS: Record<string, string> = {

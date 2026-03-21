@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { cancelReservation } from 'pages/remotes';
-import type { MutationCallbacks } from 'pages/ReservationStatusPage/hooks/types';
+import type { MutationCallbacks } from 'shared/types/types';
 
 export function useCancelReservation(callbacks: MutationCallbacks = {}) {
   const queryClient = useQueryClient();
