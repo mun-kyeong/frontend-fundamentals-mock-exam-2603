@@ -3,7 +3,7 @@ import { Border, Button, Spacing, Top } from '_tosslib/components';
 import { colors } from '_tosslib/constants/colors';
 import { MyReservationsList } from 'pages/ReservationStatusPage/components/MyReservationsList';
 import { ReservationTimeline } from 'pages/ReservationStatusPage/components/ReservationTimeline';
-import { SectionBlock } from 'pages/ReservationStatusPage/components/SectionBlock';
+import { SectionBlock } from '../../shared/components/SectionBlock';
 import { useCancelReservation } from 'pages/ReservationStatusPage/hooks/useCancelReservation';
 import { useMyReservations } from 'pages/ReservationStatusPage/hooks/useMyReservations';
 import { useReservations } from 'pages/ReservationStatusPage/hooks/useReservations';

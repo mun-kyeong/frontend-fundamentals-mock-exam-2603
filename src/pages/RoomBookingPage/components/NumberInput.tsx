@@ -1,32 +1,41 @@
 import { css } from '@emotion/react';
 import type { SerializedStyles } from '@emotion/react';
 import { colors } from '_tosslib/constants/colors';
-type DatePickerProps = {
-  value: string;
-  min: string;
-  max?: string;
+
+type NumberInputProps = {
+  value: number;
+  min?: number;
+  max?: number;
   disabled?: boolean;
-  onChange: (value: string) => void;
+  onChange: (value: number) => void;
   ariaLabel: string;
   inputCss?: SerializedStyles;
 };
 
-export function DatePicker({ value, min, max, disabled, onChange, ariaLabel, inputCss }: DatePickerProps) {
+export function NumberInput({
+  value,
+  min,
+  max,
+  disabled,
+  onChange,
+  ariaLabel,
+  inputCss,
+}: NumberInputProps) {
   return (
     <input
-      type="date"
+      type="number"
       value={value}
       min={min}
       max={max}
       disabled={disabled}
-      onChange={e => onChange(e.target.value)}
+      onChange={e => onChange(Number(e.target.value))}
       aria-label={ariaLabel}
-      css={[dateInputCss, inputCss]}
+      css={[inputCssBase, inputCss]}
     />
   );
 }
 
-const dateInputCss = css`
+const inputCssBase = css`
   box-sizing: border-box;
   font-size: 16px;
   font-weight: 500;
