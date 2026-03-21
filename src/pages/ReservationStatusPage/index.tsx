@@ -29,7 +29,6 @@ export function ReservationStatusPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const [date, setDate] = useState(formatDate(new Date()));
-  const [activeReservation, setActiveReservation] = useState<string | null>(null);
 
   const locationState = location.state as { message?: string; date?: string } | null;
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(
@@ -94,8 +93,6 @@ export function ReservationStatusPage() {
             endHour={TIMELINE_END}
             slotMinutes={TIMELINE_SLOT_MINUTES}
             equipmentLabels={EQUIPMENT_LABELS}
-            activeReservationId={activeReservation}
-            onToggleReservation={setActiveReservation}
           />
         </SectionBlock>
       </div>

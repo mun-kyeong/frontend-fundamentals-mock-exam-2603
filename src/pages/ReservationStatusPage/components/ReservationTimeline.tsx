@@ -1,6 +1,7 @@
 import { css } from '@emotion/react';
 import { Text } from '_tosslib/components';
 import { colors } from '_tosslib/constants/colors';
+import { useState } from 'react';
 
 type Room = { id: string; name: string };
 type Reservation = { id: string; roomId: string; start: string; end: string; attendees: number; equipment: string[] };
@@ -12,8 +13,6 @@ type ReservationTimelineProps = {
   endHour?: number;
   slotMinutes?: number;
   equipmentLabels: Record<string, string>;
-  activeReservationId: string | null;
-  onToggleReservation: (id: string | null) => void;
 };
 
 export function ReservationTimeline({
@@ -23,9 +22,9 @@ export function ReservationTimeline({
   endHour = 20,
   slotMinutes = 30,
   equipmentLabels,
-  activeReservationId,
-  onToggleReservation,
 }: ReservationTimelineProps) {
+  const [activeReservation, setActiveReservation] = useState<string | null>(null);
+
   const timeSlots = buildTimeSlots(startHour, endHour, slotMinutes);
   const hourLabels = timeSlots.filter(t => t.endsWith(':00'));
   const totalMinutes = (endHour - startHour) * 60;
@@ -56,12 +55,13 @@ export function ReservationTimeline({
       {rooms.map((room, index) => {
         const roomReservations = reservations.filter(r => r.roomId === room.id);
         return (
-          <div
-            key={room.id}
-            css={timelineRowCss(index > 0)}
-          >
+          <div key={room.id} css={timelineRowCss(index > 0)}>
             <div css={timelineRoomLabelCss}>
-              <Text typography="t7" fontWeight="medium" color={colors.grey700} ellipsisAfterLines={1}
+              <Text
+                typography="t7"
+                fontWeight="medium"
+                color={colors.grey700}
+                ellipsisAfterLines={1}
                 css={timelineRoomNameCss}
               >
                 {room.name}
@@ -71,25 +71,22 @@ export function ReservationTimeline({
               {roomReservations.map(res => {
                 const left = (toMinutes(res.start) / totalMinutes) * 100;
                 const width = ((toMinutes(res.end) - toMinutes(res.start)) / totalMinutes) * 100;
-                const isActive = activeReservationId === res.id;
+                const isActive = activeReservation === res.id;
                 return (
                   <div key={res.id} css={timelineBlockWrapperCss(left, width)}>
                     <div
                       role="button"
                       aria-label={`${room.name} ${res.start}-${res.end} 예약 상세`}
-                      onClick={() => onToggleReservation(isActive ? null : res.id)}
+                      onClick={() => setActiveReservation(isActive ? null : res.id)}
                       css={timelineBlockCss(isActive)}
                     />
                     {isActive && (
-                      <div
-                        role="tooltip"
-                        css={timelineTooltipCss}
-                      >
-                        <div>{res.start} ~ {res.end}</div>
+                      <div role="tooltip" css={timelineTooltipCss}>
+                        <div>
+                          {res.start} ~ {res.end}
+                        </div>
                         <div>{res.attendees}명</div>
-                        {res.equipment.length > 0 && (
-                          <div>{res.equipment.map(e => equipmentLabels[e]).join(', ')}</div>
-                        )}
+                        {res.equipment.length > 0 && <div>{res.equipment.map(e => equipmentLabels[e]).join(', ')}</div>}
                       </div>
                     )}
                   </div>
