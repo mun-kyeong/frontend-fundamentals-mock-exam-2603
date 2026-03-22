@@ -6,7 +6,6 @@ import axios from 'axios';
 import { ReservationConditionsSection } from 'pages/RoomBookingPage/components/ReservationConditionsSection';
 import { SelectableRoomCard } from 'pages/RoomBookingPage/components/SelectableRoomCard';
 import { ValidationMessage } from 'pages/RoomBookingPage/components/ValidationMessage';
-import { EQUIPMENT_LABELS } from 'pages/RoomBookingPage/constants';
 import { useAvailableRooms } from 'pages/RoomBookingPage/hooks/useAvailableRooms';
 import { useCreateReservation } from 'pages/RoomBookingPage/hooks/useCreateReservation';
 import { useRoomBookingForm } from 'pages/RoomBookingPage/hooks/useRoomBookingForm';
@@ -17,6 +16,7 @@ import { FormProvider } from 'react-hook-form';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { MessageBanner } from '../../shared/components/MessageBanner';
 import { SectionBlock } from '../../shared/components/SectionBlock';
+import { EQUIPMENT_LABELS } from '../../shared/constants/equipment.constants';
 
 export function RoomBookingPage() {
   const navigate = useNavigate();

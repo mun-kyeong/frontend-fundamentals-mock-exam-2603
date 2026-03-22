@@ -2,13 +2,14 @@ import { Select, Spacing } from '_tosslib/components';
 import { css } from '@emotion/react';
 import { Controller, useFormContext } from 'react-hook-form';
 import { DatePicker } from '../../../shared/components/DatePicker';
-import { ALL_EQUIPMENT, EQUIPMENT_LABELS, TIME_SLOTS } from '../constants';
+import { TIME_SLOTS } from '../constants';
 import { FieldBlock } from './FieldBlock';
 import { NumberInput } from './NumberInput';
 import { ToggleChipButton } from './ToggleChipButton';
 import type { Equipment } from '_tosslib/server/types';
 import type { FormValues } from '../hooks/useRoomBookingForm';
 import { formatDate } from '../../../shared/utils/date.utils';
+import { ALL_EQUIPMENT, EQUIPMENT_LABELS } from '../../../shared/constants/equipment.constants';
 
 type Props = {
   floors: number[];
