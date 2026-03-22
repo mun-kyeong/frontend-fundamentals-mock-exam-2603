@@ -10,13 +10,22 @@ type CreateReservationPayload = {
   equipment: string[];
 };
 
-export function useCreateReservation() {
+type CreateReservationCallbacks = {
+  onSuccess?: (data: { ok: boolean; reservation?: unknown; code?: string; message?: string }, variables: CreateReservationPayload) => void;
+  onError?: (error: unknown, variables: CreateReservationPayload) => void;
+};
+
+export function useCreateReservation(callbacks: CreateReservationCallbacks = {}) {
   const queryClient = useQueryClient();
 
   return useMutation((data: CreateReservationPayload) => createReservation(data), {
-    onSuccess: (_data, variables) => {
+    onSuccess: (data, variables) => {
       queryClient.invalidateQueries(['reservations', variables.date]);
       queryClient.invalidateQueries(['myReservations']);
+      callbacks.onSuccess?.(data, variables);
+    },
+    onError: (error, variables) => {
+      callbacks.onError?.(error, variables);
     },
   });
 }

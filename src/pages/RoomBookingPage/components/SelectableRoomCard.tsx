@@ -1,8 +1,7 @@
 import { css } from '@emotion/react';
 import { ListRow, Text } from '_tosslib/components';
 import { colors } from '_tosslib/constants/colors';
-
-type Room = { id: string; name: string; floor: number; capacity: number; equipment: string[] };
+import type { Room } from '_tosslib/server/types';
 
 type SelectableRoomCardProps = {
   room: Room;
