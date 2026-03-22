@@ -8,11 +8,12 @@ import { useCancelReservation } from 'pages/ReservationStatusPage/hooks/useCance
 import { useMyReservations } from 'pages/ReservationStatusPage/hooks/useMyReservations';
 import { useReservations } from 'pages/ReservationStatusPage/hooks/useReservations';
 import { useRooms } from 'pages/ReservationStatusPage/hooks/useRooms';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { MessageBanner } from '../../shared/components/MessageBanner';
 import { DatePicker } from '../../shared/components/DatePicker';
 import { formatDate } from '../../shared/utils/date.utils';
+import { useReservationStatusLocation } from './hooks/useReservationStatusLocation';
 
 const EQUIPMENT_LABELS: Record<string, string> = {
   tv: 'TV',
@@ -31,9 +32,8 @@ export function ReservationStatusPage() {
   const [date, setDate] = useState(formatDate(new Date()));
 
   const locationState = location.state as { message?: string; date?: string } | null;
-  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(
-    locationState?.message ? { type: 'success', text: locationState.message } : null
-  );
+  const { initialMessage } = useReservationStatusLocation({ locationState, setDate });
+  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(initialMessage);
 
   const { data: rooms = [] } = useRooms();
   const { data: reservations = [] } = useReservations(date);
@@ -50,18 +50,6 @@ export function ReservationStatusPage() {
 
   const getRoomName = (roomId: string) =>
     rooms.find((r: { id: string; name: string }) => r.id === roomId)?.name ?? roomId;
-
-  useEffect(() => {
-    if (locationState?.message || locationState?.date) {
-      window.history.replaceState({}, '');
-    }
-  }, [locationState]);
-
-  useEffect(() => {
-    if (locationState?.date) {
-      setDate(locationState.date);
-    }
-  }, [locationState?.date]);
 
   return (
     <div css={pageWrapperCss}>
