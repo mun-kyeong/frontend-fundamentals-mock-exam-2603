@@ -1,10 +1,9 @@
 import { css } from '@emotion/react';
-import { Border, Button, Spacing, Text, Top } from '_tosslib/components';
+import { Border, Button, Spacing, Top } from '_tosslib/components';
 import { colors } from '_tosslib/constants/colors';
-import type { Room } from '_tosslib/server/types';
 import axios from 'axios';
+import { AvailableRoomList } from 'pages/RoomBookingPage/components/AvailableRoomList';
 import { ReservationConditionsSection } from 'pages/RoomBookingPage/components/ReservationConditionsSection';
-import { SelectableRoomCard } from 'pages/RoomBookingPage/components/SelectableRoomCard';
 import { ValidationMessage } from 'pages/RoomBookingPage/components/ValidationMessage';
 import { useAvailableRooms } from 'pages/RoomBookingPage/hooks/useAvailableRooms';
 import { useCreateReservation } from 'pages/RoomBookingPage/hooks/useCreateReservation';
@@ -151,28 +150,12 @@ export function RoomBookingPage() {
           <SectionBlock title="예약 가능 회의실" subtitle={`${availableRooms.length}개`}>
             <Spacing size={16} />
 
-            {availableRooms.length === 0 ? (
-              <div css={availableEmptyCss}>
-                <Text typography="t6" color={colors.grey500}>
-                  조건에 맞는 회의실이 없습니다.
-                </Text>
-              </div>
-            ) : (
-              <div css={availableListCss}>
-                {availableRooms.map((room: Room) => {
-                  const isSelected = selectedRoomId === room.id;
-                  return (
-                    <SelectableRoomCard
-                      key={room.id}
-                      room={room}
-                      isSelected={isSelected}
-                      onSelect={setSelectedRoomId}
-                      equipmentLabels={EQUIPMENT_LABELS}
-                    />
-                  );
-                })}
-              </div>
-            )}
+            <AvailableRoomList
+              rooms={availableRooms}
+              selectedRoomId={selectedRoomId}
+              onSelectRoom={setSelectedRoomId}
+              equipmentLabels={EQUIPMENT_LABELS}
+            />
 
             <Spacing size={16} />
             <Button display="full" onClick={handleBook} disabled={createMutation.isLoading}>
@@ -219,17 +202,4 @@ const sectionPaddingCss = css`
 
 const inlineErrorContainerCss = css`
   padding: 0 24px;
-`;
-
-const availableEmptyCss = css`
-  padding: 40px 0;
-  text-align: center;
-  background: ${colors.grey50};
-  border-radius: 14px;
-`;
-
-const availableListCss = css`
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
 `;
