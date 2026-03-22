@@ -2,6 +2,7 @@ import { css } from '@emotion/react';
 import { Text } from '_tosslib/components';
 import { colors } from '_tosslib/constants/colors';
 import { useState } from 'react';
+import { ReservationTimelineBlock } from './ReservationTimelineBlock';
 
 type Room = { id: string; name: string };
 type Reservation = { id: string; roomId: string; start: string; end: string; attendees: number; equipment: string[] };
@@ -73,23 +74,20 @@ export function ReservationTimeline({
                 const width = ((toMinutes(res.end) - toMinutes(res.start)) / totalMinutes) * 100;
                 const isActive = activeReservation === res.id;
                 return (
-                  <div key={res.id} css={timelineBlockWrapperCss(left, width)}>
-                    <div
-                      role="button"
-                      aria-label={`${room.name} ${res.start}-${res.end} 예약 상세`}
-                      onClick={() => setActiveReservation(isActive ? null : res.id)}
-                      css={timelineBlockCss(isActive)}
-                    />
-                    {isActive && (
-                      <div role="tooltip" css={timelineTooltipCss}>
-                        <div>
-                          {res.start} ~ {res.end}
-                        </div>
-                        <div>{res.attendees}명</div>
-                        {res.equipment.length > 0 && <div>{res.equipment.map(e => equipmentLabels[e]).join(', ')}</div>}
-                      </div>
-                    )}
-                  </div>
+                  <ReservationTimelineBlock
+                    key={res.id}
+                    reservationId={res.id}
+                    roomName={room.name}
+                    start={res.start}
+                    end={res.end}
+                    attendees={res.attendees}
+                    equipment={res.equipment}
+                    equipmentLabels={equipmentLabels}
+                    isActive={isActive}
+                    leftPercent={left}
+                    widthPercent={width}
+                    onToggle={id => setActiveReservation(isActive ? null : id)}
+                  />
                 );
               })}
             </div>
@@ -156,43 +154,6 @@ const timelineTrackCss = css`
   border-radius: 6px;
   position: relative;
   overflow: visible;
-`;
-
-const timelineBlockWrapperCss = (left: number, width: number) => css`
-  position: absolute;
-  left: ${left}%;
-  width: ${width}%;
-  height: 100%;
-`;
-
-const timelineBlockCss = (isActive: boolean) => css`
-  width: 100%;
-  height: 100%;
-  background: ${colors.blue400};
-  border-radius: 4px;
-  opacity: ${isActive ? 1 : 0.75};
-  cursor: pointer;
-  transition: opacity 0.15s;
-  &:hover {
-    opacity: 1;
-  }
-`;
-
-const timelineTooltipCss = css`
-  position: absolute;
-  top: 100%;
-  left: 50%;
-  transform: translateX(-50%);
-  margin-top: 6px;
-  background: ${colors.grey900};
-  color: ${colors.white};
-  padding: 8px 12px;
-  border-radius: 8px;
-  font-size: 12px;
-  white-space: nowrap;
-  z-index: 10;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
-  line-height: 1.6;
 `;
 
 function buildTimeSlots(startHour: number, endHour: number, slotMinutes: number): string[] {
